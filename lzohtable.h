@@ -13,11 +13,13 @@ typedef struct lzohtable_allocator{
     void (*dealloc)(void *ptr, size_t size, void *ctx);
 }LZOHTableAllocator;
 
+typedef uint64_t lzohtable_hash_t;
+
 typedef struct lzohtable_slot{
     unsigned char used;
 
     size_t probe;
-    uint64_t hash;
+    lzohtable_hash_t hash;
 
     char kcpy;
     char vcpy;
@@ -52,11 +54,11 @@ void lzohtable_clear_help(void *extra, lzohtable_clean_up *clean_up_helper, LZOH
 
 #define LZOHTABLE_CLEAR(_table)(lzohtable_clear_help(NULL, NULL, (_table)))
 
-int lzohtable_put(void *key, size_t key_size, void *value, LZOHTable *table, uint64_t *out_hash);
+int lzohtable_put(void *key, size_t key_size, void *value, LZOHTable *table, lzohtable_hash_t *out_hash);
 
-int lzohtable_put_ck(void *key, size_t key_size, void *value, LZOHTable *table, uint64_t *out_hash);
+int lzohtable_put_ck(void *key, size_t key_size, void *value, LZOHTable *table, lzohtable_hash_t *out_hash);
 
-int lzohtable_put_ckv(void *key, size_t key_size, void *value, size_t value_size, LZOHTable *table, uint64_t *out_hash);
+int lzohtable_put_ckv(void *key, size_t key_size, void *value, size_t value_size, LZOHTable *table, lzohtable_hash_t *out_hash);
 
 void lzohtable_remove_help(void *key, size_t key_size, void *extra, void (*destroy)(void *key, void *value, void *extra), LZOHTable *table);
 

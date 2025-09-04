@@ -25,7 +25,7 @@ static inline int is_power_of_two(uintptr_t x){
     return (x & (x - 1)) == 0;
 }
 
-static inline uint64_t fnv_1a_hash(const uint8_t *key, size_t key_size){
+static inline lzohtable_hash_t fnv_1a_hash(const uint8_t *key, size_t key_size){
     const uint64_t prime = 0x00000100000001b3;
     const uint64_t basis = 0xcbf29ce484222325;
     uint64_t hash = basis;
@@ -41,7 +41,7 @@ static inline uint64_t fnv_1a_hash(const uint8_t *key, size_t key_size){
 static LZOHTableSlot* robin_hood_lookup(void *key, size_t key_size, LZOHTable *table, size_t *out_idx){
     size_t m = table->m;
     LZOHTableSlot *slots = table->slots;
-    uint64_t hash = fnv_1a_hash(key, key_size);
+    lzohtable_hash_t hash = fnv_1a_hash(key, key_size);
     size_t i = hash & (m - 1);
     size_t probe = 0;
 
@@ -261,7 +261,7 @@ void lzohtable_print(void (*print_helper)(size_t count, size_t len, size_t idx, 
 }
 
 int lzohtable_lookup(void *key, size_t key_size, LZOHTable *table, void **out_value){
-    uint64_t hash = fnv_1a_hash(key, key_size);
+    lzohtable_hash_t hash = fnv_1a_hash(key, key_size);
     size_t i = hash & (table->m - 1);
     size_t m = table->m;
     size_t probe = 0;
@@ -330,12 +330,12 @@ void lzohtable_clear_help(void *extra, lzohtable_clean_up *clean_up_helper, LZOH
     table->n = 0;
 }
 
-int lzohtable_put(void *key, size_t size, void *value, LZOHTable *table, uint64_t *out_hash){
+int lzohtable_put(void *key, size_t size, void *value, LZOHTable *table, lzohtable_hash_t *out_hash){
     if(LZOHTABLE_LOAD_FACTOR(table) >= table->lfth && copy_paste_slots(table)){
         return 1;
     }
 
-    uint64_t hash = fnv_1a_hash(key, size);
+    lzohtable_hash_t hash = fnv_1a_hash(key, size);
     LZOHTableSlot moving_slot = (LZOHTableSlot){
         .used = 1,
         .hash = hash,
@@ -359,7 +359,7 @@ int lzohtable_put(void *key, size_t size, void *value, LZOHTable *table, uint64_
     return 0;
 }
 
-int lzohtable_put_ck(void *key, size_t key_size, void *value, LZOHTable *table, uint64_t *out_hash){
+int lzohtable_put_ck(void *key, size_t key_size, void *value, LZOHTable *table, lzohtable_hash_t *out_hash){
     LZOHTableAllocator *allocator = table->allocator;
     void *copied_key = MEMORY_ALLOC(char, key_size, allocator);
 
@@ -374,7 +374,7 @@ int lzohtable_put_ck(void *key, size_t key_size, void *value, LZOHTable *table, 
 
     memcpy(copied_key, key, key_size);
 
-    uint64_t hash = fnv_1a_hash(copied_key, key_size);
+    lzohtable_hash_t hash = fnv_1a_hash(copied_key, key_size);
     LZOHTableSlot moving_slot = (LZOHTableSlot){
         .used = 1,
         .hash = hash,
@@ -408,7 +408,7 @@ int lzohtable_put_ck(void *key, size_t key_size, void *value, LZOHTable *table, 
     return 0;
 }
 
-int lzohtable_put_ckv(void *key, size_t key_size, void *value, size_t value_size, LZOHTable *table, uint64_t *out_hash){
+int lzohtable_put_ckv(void *key, size_t key_size, void *value, size_t value_size, LZOHTable *table, lzohtable_hash_t *out_hash){
     LZOHTableAllocator *allocator = table->allocator;
     void *copied_key = MEMORY_ALLOC(char, key_size, allocator);
     void *copied_value = MEMORY_ALLOC(char, value_size, allocator);
@@ -428,7 +428,7 @@ int lzohtable_put_ckv(void *key, size_t key_size, void *value, size_t value_size
     memcpy(copied_key, key, key_size);
     memcpy(copied_value, value, value_size);
 
-    uint64_t hash = fnv_1a_hash(copied_key, key_size);
+    lzohtable_hash_t hash = fnv_1a_hash(copied_key, key_size);
     LZOHTableSlot moving_slot = (LZOHTableSlot){
         .used = 1,
         .hash = hash,
