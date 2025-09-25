@@ -56,7 +56,7 @@ static LZOHTableSlot* robin_hood_lookup(const void *key, size_t key_size, LZOHTa
             break;
         }
 
-        if(key_size == slot.key_size && strncmp(key, slot.key, key_size) == 0){
+        if(key_size == slot.key_size && memcmp(key, slot.key, key_size) == 0){
             if(out_idx){
                 *out_idx = i;
             }
@@ -86,7 +86,7 @@ static int robin_hood_insert(
         LZOHTableSlot current_slot = slots[i];
 
         if(current_slot.used){
-            if(moving_slot.key_size == current_slot.key_size && strncmp(moving_slot.key, current_slot.key, moving_slot.key_size) == 0){
+            if(moving_slot.key_size == current_slot.key_size && memcmp(moving_slot.key, current_slot.key, moving_slot.key_size) == 0){
                 if(out_vcpy){
                     *out_vcpy = current_slot.vcpy;
                 }
@@ -277,7 +277,7 @@ int lzohtable_lookup(size_t key_size, const void *key, LZOHTable *table, void **
             break;
         }
 
-        if(key_size == slot.key_size && strncmp(key, slot.key, key_size) == 0){
+        if(key_size == slot.key_size && memcmp(key, slot.key, key_size) == 0){
             if(out_value){
                 *out_value = slot.value;
             }
